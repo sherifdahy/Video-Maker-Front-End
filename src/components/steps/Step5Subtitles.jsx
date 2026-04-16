@@ -50,7 +50,7 @@ export default function Step5Subtitles({
     setLoadingSub(true);
     setSubError("");
     try {
-      const { data } = await axios.post("/api/transcript", { url, lang: subtitleLang });
+      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/transcript`, { url, lang: subtitleLang });
       setTranscript(data.transcript);
       setSrtJobId(data.srtJobId);
       if (!data.transcript) setSubError(data.message || "لا توجد ترجمة");

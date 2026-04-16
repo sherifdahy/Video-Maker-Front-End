@@ -73,7 +73,7 @@ export default function Step6Export({
     }, 1800);
 
     try {
-      const { data } = await axios.post("/api/clip", {
+      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/clip`, {
         url, startTime, endTime, quality,
         muteAudio, audioOnly,
         bgType, bgColor, bgPreset,

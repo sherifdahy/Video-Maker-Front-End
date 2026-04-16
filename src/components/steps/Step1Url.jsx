@@ -14,7 +14,7 @@ export default function Step1Url({ url, setUrl, videoInfo, setVideoInfo }) {
     setVideoInfo(null);
     setError("");
     try {
-      const { data } = await axios.post("/api/info", { url: u });
+      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/info`, { url: u });
       setVideoInfo(data);
     } catch (e) {
       setError(e.response?.data?.error || "تعذّر جلب معلومات الفيديو");
