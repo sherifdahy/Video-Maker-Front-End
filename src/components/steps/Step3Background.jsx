@@ -58,7 +58,7 @@ export default function Step3Background({
     const fd = new FormData();
     fd.append("file", file);
     try {
-      const res = await fetch("/api/upload-bg", { method: "POST", body: fd });
+      const res = await fetch(`${API_URL}/api/upload-bg`, { method: "POST", body: fd });
       const data = await res.json();
       if (isVideo) {
         setBgVideoPath(data.path);
