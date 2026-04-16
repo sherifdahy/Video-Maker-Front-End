@@ -1,19 +1,7 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "envPrefix": "VITE_",
-  "env": {
-    "VITE_API_URL": "@vite_api_url"
-  },
-  "functions": {
-    "api/**": {
-      "memory": 1024,
-      "maxDuration": 60
-    }
-  },
-  "regions": ["iad1"],
   "git": {
     "deploymentEnabled": true
-  },
-  "trailingSlash": false
+  }
 }
