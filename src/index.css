@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── خط عربي ──────────────────────────────────────── */
+*, *::before, *::after { font-family: 'Cairo', sans-serif; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+/* ── متغيرات CSS ──────────────────────────────────── */
+:root {
+  --bg:        #f1f5f9;
+  --surface:   #ffffff;
+  --surface2:  #f8fafc;
+  --border:    #e2e8f0;
+  --text:      #0f172a;
+  --muted:     #64748b;
+  --brand:     #0ea5e9;
+  --brand-d:   #0284c7;
+  --brand-glow:rgba(14,165,233,.25);
+  --success:   #22c55e;
+  --danger:    #ef4444;
+}
+.dark {
+  --bg:        #060d18;
+  --surface:   #0c1a2b;
+  --surface2:  #0f2036;
+  --border:    #1a3048;
+  --text:      #e2e8f0;
+  --muted:     #94a3b8;
+  --brand:     #38bdf8;
+  --brand-d:   #0ea5e9;
+  --brand-glow:rgba(56,189,248,.2);
+}
+
+body { background: var(--bg); color: var(--text); min-height: 100vh; transition: background .3s, color .3s; }
+
+/* ── Glassmorphism card ───────────────────────────── */
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: background .3s, border-color .3s;
+}
+.glass2 {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+}
+
+/* ── Inputs ───────────────────────────────────────── */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--brand-glow);
+  border-color: var(--brand) !important;
+}
+input[type="range"] { accent-color: var(--brand); cursor: pointer; }
+input[type="color"]  { cursor: pointer; border-radius: 8px; padding: 2px; }
+
+/* ── Wizard step indicator ────────────────────────── */
+.step-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  transition: all .3s;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+}
+.step-dot.active  { background: var(--brand); border-color: var(--brand); color: #fff; box-shadow: 0 0 0 6px var(--brand-glow); }
+.step-dot.done    { background: var(--success); border-color: var(--success); color: #fff; }
+.step-connector   { flex: 1; height: 2px; background: var(--border); transition: background .3s; }
+.step-connector.done { background: var(--success); }
+
+/* ── Toggle switch ────────────────────────────────── */
+.toggle-track {
+  width: 44px; height: 24px; border-radius: 99px;
+  position: relative; cursor: pointer; transition: background .25s;
+  background: var(--border);
+  flex-shrink: 0;
+}
+.toggle-track.on  { background: var(--brand); }
+.toggle-thumb {
+  position: absolute; top: 3px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  transition: right .25s;
+  right: 23px;
+}
+.toggle-track.on .toggle-thumb { right: 3px; }
+
+/* ── Card hover ───────────────────────────────────── */
+.card-hover { transition: transform .2s, box-shadow .2s; }
+.card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 40px var(--brand-glow); }
+
+/* ── Progress bar stripe ──────────────────────────── */
+@keyframes stripe { from { background-position: 1rem 0 } to { background-position: 0 0 } }
+.progress-stripe {
+  background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+  background-size: 1rem 1rem;
+  animation: stripe 1s linear infinite;
+}
+
+/* ── Animations ───────────────────────────────────── */
+@keyframes fadeIn  { from { opacity:0 } to { opacity:1 } }
+@keyframes slideUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+@keyframes pulse2  { 0%,100% { opacity:.6 } 50% { opacity:1 } }
+@keyframes spin    { to { transform:rotate(360deg) } }
+@keyframes ripple  { 0% { transform:scale(1);opacity:.5 } 100% { transform:scale(2.2);opacity:0 } }
+
+.anim-fade   { animation: fadeIn  .35s ease both }
+.anim-slide  { animation: slideUp .45s ease both }
+.anim-spin   { animation: spin 1.2s linear infinite }
+.anim-pulse  { animation: pulse2 2.5s ease-in-out infinite }
+.ripple-ring { animation: ripple 2.2s ease-out infinite }
+
+/* ── Preset colour swatch ─────────────────────────── */
+.swatch { width:36px; height:36px; border-radius:10px; cursor:pointer; transition:transform .15s, box-shadow .15s; border:2px solid transparent; }
+.swatch:hover     { transform:scale(1.12); }
+.swatch.selected  { border-color:#fff; box-shadow:0 0 0 3px var(--brand); }
+
+/* ── Phone preview frame ──────────────────────────── */
+.phone-frame {
+  aspect-ratio: 9/16; width: 180px;
+  border-radius: 24px; overflow: hidden; position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5), inset 0 0 0 3px rgba(255,255,255,.1);
+  border: 3px solid rgba(255,255,255,.15);
+  flex-shrink: 0;
+}
+
+/* ── Scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px }
+::-webkit-scrollbar-track { background: transparent }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px }

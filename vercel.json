@@ -1,0 +1,6 @@
+# Vercel Build Configuration
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "envPrefix": "VITE_"
+}
