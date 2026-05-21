@@ -1,7 +1,8 @@
 /** Step 6 — التصدير النهائي */
 import { useState } from "react";
 import axios from "axios";
-import { Download, Copy, CheckCircle2, Loader2, Instagram, Smartphone } from "lucide-react";
+import { Download, Copy, CheckCircle2, Loader2 } from "lucide-react";
+import ProgressSteps from "../ProgressSteps";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -10,23 +11,6 @@ const OUTPUT_FORMATS = [
   { id: "tiktok",  label: "TikTok",           icon: "🎵", desc: "1080×1920 · H.264" },
   { id: "shorts",  label: "YouTube Shorts",   icon: "▶️",  desc: "1080×1920 · H.264" },
 ];
-
-function ProgressBar({ progress, message }) {
-  return (
-    <div className="flex flex-col gap-3 anim-fade">
-      <div className="flex items-center justify-between text-sm">
-        <span style={{ color: "var(--muted)" }}>{message}</span>
-        <span className="font-bold" style={{ color: "var(--brand)" }}>{progress}%</span>
-      </div>
-      <div className="w-full rounded-full h-3 overflow-hidden" style={{ background: "var(--border)" }}>
-        <div
-          className="h-full rounded-full progress-stripe transition-all duration-500"
-          style={{ width: `${progress}%`, background: `linear-gradient(90deg, var(--brand-d), var(--brand))` }}
-        />
-      </div>
-    </div>
-  );
-}
 
 export default function Step6Export({
   url, startTime, endTime, quality,
@@ -41,36 +25,17 @@ export default function Step6Export({
 }) {
   const [outputFormat, setOutputFormat] = useState("reels");
   const [processing,   setProcessing]   = useState(false);
-  const [progress,     setProgress]     = useState(0);
-  const [progressMsg,  setProgressMsg]  = useState("");
+  const [activeJobId,  setActiveJobId]  = useState(null);
   const [result,       setResult]       = useState(null);
   const [error,        setError]        = useState("");
   const [copied,       setCopied]       = useState(false);
 
-  const PROGRESS_MSGS = [
-    "جاري تنزيل المقطع من يوتيوب...",
-    "جاري تحضير الخلفية...",
-    "جاري دمج الطبقات...",
-    "جاري إضافة الترجمة والنصوص...",
-    "جاري التصدير النهائي...",
-  ];
-
   const handleExport = async () => {
     setError("");
     setResult(null);
+    const clientJobId = crypto.randomUUID();
+    setActiveJobId(clientJobId);
     setProcessing(true);
-    setProgress(5);
-    setProgressMsg(PROGRESS_MSGS[0]);
-
-    let msgIdx = 0;
-    const timer = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 88) { clearInterval(timer); return p; }
-        return p + Math.random() * 7;
-      });
-      msgIdx = (msgIdx + 1) % PROGRESS_MSGS.length;
-      setProgressMsg(PROGRESS_MSGS[msgIdx]);
-    }, 1800);
 
     try {
       const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/clip`, {
@@ -84,11 +49,9 @@ export default function Step6Export({
         watermarkText, overlayText, overlayPos,
         speakerName, speakerTitle,
         outputFormat,
+        clientJobId,
       });
 
-      clearInterval(timer);
-      setProgress(100);
-      setProgressMsg("اكتمل بنجاح! 🎉");
       setResult(data);
       onSaveHistory?.({
         id: data.jobId,
@@ -100,9 +63,8 @@ export default function Step6Export({
         date: new Date().toLocaleString("ar-EG"),
       });
     } catch (e) {
-      clearInterval(timer);
       setError(e.response?.data?.error || "حدث خطأ غير متوقع أثناء المعالجة");
-      setProgress(0);
+      setActiveJobId(null);
     } finally {
       setProcessing(false);
     }
@@ -169,7 +131,14 @@ export default function Step6Export({
       )}
 
       {/* Progress */}
-      {processing && <ProgressBar progress={Math.round(progress)} message={progressMsg} />}
+      {processing && (
+        <ProgressSteps
+          jobId={activeJobId}
+          subtitleStyle={subtitleStyle}
+          onDone={() => {}}
+          onError={(msg) => setError(msg)}
+        />
+      )}
 
       {/* Result */}
       {result && !processing && (

@@ -6,16 +6,20 @@
 import { useState, useEffect } from "react";
 import {
   Sun, Moon, Scissors, History, Trash2, Download,
-  Copy, CheckCircle2, ChevronRight, ChevronLeft,
+  Copy, CheckCircle2, ChevronRight, ChevronLeft, Settings,
 } from "lucide-react";
 
-import PreviewPanel     from "./components/PreviewPanel";
-import Step1Url         from "./components/steps/Step1Url";
-import Step2Time        from "./components/steps/Step2Time";
-import Step3Background  from "./components/steps/Step3Background";
-import Step4Layout      from "./components/steps/Step4Layout";
-import Step5Subtitles   from "./components/steps/Step5Subtitles";
-import Step6Export      from "./components/steps/Step6Export";
+import { ToastProvider }  from "./components/Toast";
+import ModeSelector       from "./components/ModeSelector";
+import AIClipsPanel       from "./components/AIClipsPanel";
+import SettingsModal      from "./components/SettingsModal";
+import PreviewPanel       from "./components/PreviewPanel";
+import Step1Url           from "./components/steps/Step1Url";
+import Step2Time          from "./components/steps/Step2Time";
+import Step3Background    from "./components/steps/Step3Background";
+import Step4Layout        from "./components/steps/Step4Layout";
+import Step5Subtitles     from "./components/steps/Step5Subtitles";
+import Step6Export        from "./components/steps/Step6Export";
 
 // ── API URL Configuration ──────────────────────────────
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -125,6 +129,20 @@ export default function App() {
   const [muteAudio,     setMuteAudio]     = useState(false);
   const [audioOnly,     setAudioOnly]     = useState(false);
 
+  // ── AI mode & settings
+  const [mode,         setMode]         = useState(null); // 'manual' | 'ai' | null
+  const [groqApiKey,   setGroqApiKey]   = useState(() => localStorage.getItem("groqApiKey")   || "");
+  const [analysisMode, setAnalysisMode] = useState(() => localStorage.getItem("analysisMode") || "local");
+  const [showSettings, setShowSettings] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("groqApiKey",   groqApiKey);
+    localStorage.setItem("analysisMode", analysisMode);
+  }, [groqApiKey, analysisMode]);
+
+  // Reset mode when URL changes
+  useEffect(() => { if (!url) { setMode(null); } }, [url]);
+
   // ── History
   const [history, setHistory] = useState(() => {
     try { return JSON.parse(localStorage.getItem("reelHistory") || "[]"); } catch { return []; }
@@ -136,6 +154,11 @@ export default function App() {
   const validateStep = () => {
     if (step === 1) return !!videoInfo;
     if (step === 2) {
+      // Mode selector — user must pick a mode first
+      if (mode === null) return false;
+      // AI panel — navigate from within panel, no inline Next
+      if (mode === "ai") return false;
+      // Manual mode validation
       const errs = {};
       if (!isValidTime(startTime)) errs.start = "صيغة غير صحيحة";
       if (!isValidTime(endTime))   errs.end   = "صيغة غير صحيحة";
@@ -150,7 +173,10 @@ export default function App() {
   };
 
   const goNext = () => { if (validateStep()) setStep((s) => Math.min(s + 1, 6)); };
-  const goPrev = () => setStep((s) => Math.max(s - 1, 1));
+  const goPrev = () => {
+    if (step === 2) setMode(null);
+    setStep((s) => Math.max(s - 1, 1));
+  };
 
   const stepLabels = {
     1: "الصق رابط فيديو يوتيوب للمتابعة",
@@ -162,14 +188,24 @@ export default function App() {
   };
 
   return (
+    <ToastProvider>
     <div className="min-h-screen" style={{ background: "var(--bg)" }} dir="rtl">
-      {/* Ambient glow */}
+      {/* Ambient glow + dark-mode animated orbs */}
+      <div className="orb-blue" />
+      <div className="orb-purple" />
       <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
         <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-10 blur-3xl anim-pulse"
           style={{ background: "radial-gradient(circle, var(--brand), transparent)" }} />
         <div className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full opacity-8 blur-3xl anim-pulse"
           style={{ background: "radial-gradient(circle, #818cf8, transparent)", animationDelay: "2s" }} />
       </div>
+
+      {/* Settings modal */}
+      <SettingsModal
+        open={showSettings} onClose={() => setShowSettings(false)}
+        groqApiKey={groqApiKey} setGroqApiKey={setGroqApiKey}
+        analysisMode={analysisMode} setAnalysisMode={setAnalysisMode}
+      />
 
       <div className="relative max-w-6xl mx-auto px-4 py-6 flex flex-col gap-0" style={{ zIndex: 1 }}>
 
@@ -190,6 +226,13 @@ export default function App() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="p-2 rounded-xl glass transition-all hover:scale-110 active:scale-95"
+              title="الإعدادات"
+            >
+              <Settings size={18} style={{ color: "var(--muted)" }} />
+            </button>
             <button
               onClick={() => setShowHistory((h) => !h)}
               className="p-2 rounded-xl glass transition-all hover:scale-110 active:scale-95 relative"
@@ -280,7 +323,37 @@ export default function App() {
               {step === 1 && (
                 <Step1Url url={url} setUrl={setUrl} videoInfo={videoInfo} setVideoInfo={setVideoInfo} />
               )}
-              {step === 2 && (
+              {step === 2 && mode === null && (
+                <ModeSelector
+                  onPick={(m) => setMode(m)}
+                  videoTitle={videoInfo?.title}
+                  hasGroqKey={!!groqApiKey}
+                  onOpenSettings={() => setShowSettings(true)}
+                />
+              )}
+              {step === 2 && mode === "ai" && (
+                <AIClipsPanel
+                  url={url}
+                  videoInfo={videoInfo}
+                  groqApiKey={groqApiKey}
+                  analysisMode={analysisMode}
+                  setTranscript={setTranscript}
+                  setSrtJobId={setSrtJobId}
+                  onUseClip={(clip) => {
+                    setStartTime(clip.start);
+                    setEndTime(clip.end);
+                    setMode("manual");
+                    setStep(3);
+                  }}
+                  onEditClip={(clip) => {
+                    setStartTime(clip.start);
+                    setEndTime(clip.end);
+                    setMode("manual");
+                  }}
+                  onBack={() => setMode(null)}
+                />
+              )}
+              {step === 2 && mode === "manual" && (
                 <Step2Time
                   videoInfo={videoInfo}
                   startTime={startTime} setStartTime={setStartTime}
@@ -356,7 +429,7 @@ export default function App() {
                     السابق
                   </button>
                 )}
-                {step < 6 && (
+                {step < 6 && !(step === 2 && mode !== "manual") && (
                   <button
                     onClick={goNext}
                     disabled={step === 1 && !videoInfo}
@@ -414,5 +487,6 @@ export default function App() {
         </footer>
       </div>
     </div>
+    </ToastProvider>
   );
 }

@@ -7,6 +7,7 @@ const SUB_STYLES = [
   { id: "none",           label: "بدون ترجمة" },
   { id: "center-box",    label: "صندوق وسطي" },
   { id: "bottom-captions", label: "كابشن أسفل" },
+  { id: "word-by-word",  label: "كلمة بكلمة ✨" },
 ];
 
 const OVERLAY_POS = [
@@ -72,7 +73,7 @@ export default function Step5Subtitles({
         </div>
 
         {/* Style selector */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {SUB_STYLES.map((s) => (
             <button
               key={s.id}
@@ -87,6 +88,11 @@ export default function Step5Subtitles({
             </button>
           ))}
         </div>
+        {subtitleStyle === "word-by-word" && !transcript && (
+          <p className="text-xs" style={{ color: "#8b5cf6" }}>
+            ⚠️ يتطلب ترجمة محمّلة — اضغط &quot;استخراج الترجمة&quot; أدناه
+          </p>
+        )}
 
         {subtitleStyle !== "none" && (
           <>

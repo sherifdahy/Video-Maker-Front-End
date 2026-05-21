@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ── خط عربي ──────────────────────────────────────── */
-*, *::before, *::after { font-family: 'Cairo', sans-serif; box-sizing: border-box; }
+*, *::before, *::after { font-family: 'Tajawal', 'Cairo', sans-serif; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
 /* ── متغيرات CSS ──────────────────────────────────── */
@@ -129,3 +129,50 @@ input[type="color"]  { cursor: pointer; border-radius: 8px; padding: 2px; }
 ::-webkit-scrollbar { width: 5px }
 ::-webkit-scrollbar-track { background: transparent }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px }
+
+/* ── Shimmer skeleton ─────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0 }
+  100% { background-position:  200% 0 }
+}
+.shimmer {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* ── Animated orbs (dark mode only) ──────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  33%       { transform: translateY(-20px) scale(1.05); }
+  66%       { transform: translateY(10px) scale(0.97); }
+}
+.dark .orb-blue {
+  position: fixed;
+  top: -80px; right: -80px;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56,189,248,0.5), transparent 70%);
+  filter: blur(80px);
+  opacity: 0.12;
+  animation: float 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+.dark .orb-purple {
+  position: fixed;
+  bottom: -60px; left: -60px;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,92,246,0.6), transparent 70%);
+  filter: blur(80px);
+  opacity: 0.12;
+  animation: float 8s ease-in-out infinite;
+  animation-delay: 3s;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Hide orbs in light mode */
+.orb-blue, .orb-purple { display: none; }
+.dark .orb-blue, .dark .orb-purple { display: block; }
